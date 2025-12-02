@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cursos - Just Talk Academy</title>
+    <link rel="stylesheet" href="../../public/css/gestion.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+            <img src="logo.png" alt="Logo Just Talk Academy" class="sidebar-logo">
+                <h2>Just Talk</h2>
+                <h2>Academy</h2>
+            </div>
+            <nav class="nav-menu">
+                <ul>
+                    <li><a href="#" id="view-users-btn">Gestión de Usuarios</a></li>
+                    <li><a href="#" id="view-students-btn">Estudiantes</a></li>
+                    <li><a href="#" id="view-cursos-btn">Cursos/Grupos</a></li>
+                    <li><a href="#" id="view-deudores-btn">Deudores</a></li>
+                    <li class="logout-container"><button id="logout-btn" class="logout-btn" title="Cerrar sesión"><img src="../../public/MiLogOut.png" alt="Salir"/></button></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content-area">
+            <h1>Cursos y Grupos</h1>
+
+            <div style="margin: 12px 0;">
+                <button id="add-curso-grupo-btn">Agregar Curso/Grupo</button>
+            </div>
+
+            <div id="cursos-grouped" style="margin-top: 16px;">
+                <p>Cargando cursos...</p>
+            </div>
+        </main>
+    </div>
+
+    <div id="curso-grupo-modal" class="modal" style="display:none;">
+        <div class="modal-content large">
+            <span class="close-button" id="close-curso-grupo">&times;</span>
+            <h2>Crear Curso o Grupo</h2>
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="tab-curso">Crear Curso</button>
+                <button class="tab-btn" data-tab="tab-grupo">Crear Grupo</button>
+            </div>
+
+            <div id="tab-curso" class="tab active">
+                <form id="form-curso">
+                    <div class="input-group">
+                        <label>Nombre del Curso</label>
+                        <input type="text" id="curso-Nombre_Curso" required maxlength="50">
+                    </div>
+                    <div class="input-group">
+                        <label>Descripción</label>
+                        <input type="text" id="curso-Descripcion_Curso" maxlength="50">
+                    </div>
+                    <button type="submit">Crear Curso</button>
+                    <p id="curso-msg" class="info-message"></p>
+                </form>
+            </div>
+
+            <div id="tab-grupo" class="tab" style="display:none;">
+                <form id="form-grupo">
+                    <div class="input-group">
+                        <label>Curso</label>
+                        <select id="grupo-idCurso" required>
+                            <option value="">-- Seleccione un curso --</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Nombre del Grupo</label>
+                        <input type="text" id="grupo-Nombre_Grupo" required maxlength="50">
+                    </div>
+                    <div class="input-group">
+                        <label>Fecha inicio</label>
+                        <input type="datetime-local" id="grupo-Fecha_inicio">
+                    </div>
+                    <div class="input-group">
+                        <label>Estado</label>
+                        <input type="text" id="grupo-Estado" maxlength="50">
+                    </div>
+                    <button type="submit">Crear Grupo</button>
+                    <p id="grupo-msg" class="info-message"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../public/js/menu.js"></script>
+    <script src="../../public/js/cursosGrupos.js"></script>
+    <script src="../../public/js/search-cursos.js"></script>
+</body>
+</html>

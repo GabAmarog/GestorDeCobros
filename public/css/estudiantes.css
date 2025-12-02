@@ -1,0 +1,440 @@
+/* estudiantes.css - Estilos modernizados */
+
+/* Group cards - Modern styling matching curso-card */
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+  padding: 10px 0;
+}
+
+.group-card {
+  background-color: var(--bg-card);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  padding: 25px;
+  transition: all var(--transition-normal);
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  min-height: 160px;
+  position: relative;
+  overflow: hidden;
+}
+
+.group-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+.group-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.group-card:hover::before {
+    width: 6px;
+}
+
+.group-card h4 {
+  margin-top: 0;
+  color: var(--secondary-color);
+  font-size: 1.25em; 
+  border-bottom: 2px solid rgba(52, 152, 219, 0.2);
+  padding-bottom: 12px;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.group-card p {
+  margin: 8px 0;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+.group-card p b {
+  color: var(--secondary-color);
+  font-weight: 600;
+}
+
+/* Autocomplete suggestions */
+#ins-grupo-suggestions {
+  position: relative;
+}
+#ins-grupo-suggestions ul {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  max-height: 200px;
+  overflow: auto;
+  box-shadow: var(--shadow-md);
+}
+#ins-grupo-suggestions li {
+  padding: 10px 14px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+#ins-grupo-suggestions li:hover {
+  background: #f1f7ff;
+  color: var(--primary-color);
+}
+
+/* Selected groups chips */
+#ins-selected-grupos {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+#ins-selected-grupos > div {
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9em;
+  color: var(--secondary-color);
+}
+#ins-selected-grupos > div button.remove-grupo-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--danger-color);
+  padding: 0 4px;
+  font-size: 1.1em;
+  line-height: 1;
+}
+
+/* Student details modal - two-column layout adjustments */
+.modal-content.large {
+  max-width: 1000px;
+}
+
+/* Payments table: align Mes and Grupo narrower */
+#det-pagos-table th:nth-child(2),
+#det-pagos-table td:nth-child(2) {
+  width: 100px;
+  text-align: center;
+}
+#det-pagos-table th:nth-child(4),
+#det-pagos-table td:nth-child(4) {
+  width: 150px;
+}
+#det-pagos-table th,
+#det-pagos-table td {
+  padding: 12px 15px;
+}
+
+/* Make the Detalles modal personal info two-column responsive */
+@media (max-width: 800px) {
+  .modal-content.large {
+    padding: 25px;
+  }
+}
+
+/* Billete rows styling inside payment modal */
+.billete-row input {
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+}
+.billete-row button {
+  background: var(--danger-color);
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.billete-row button:hover {
+    background-color: #c0392b;
+}
+
+/* Small helpers */
+.suggestions {
+  position: relative;
+}
+
+/* Add Student Button (Main View) */
+#add-student-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+}
+
+#add-student-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Payment badges in students table */
+.payment-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.payment-badge.active {
+  background: rgba(39, 174, 96, 0.15);
+  color: var(--success-color);
+  border: 1px solid rgba(39, 174, 96, 0.2);
+}
+
+.payment-badge.warning {
+  background: rgba(241, 196, 15, 0.15);
+  color: #d35400;
+  border: 1px solid rgba(241, 196, 15, 0.2);
+}
+
+.payment-badge.danger {
+  background: rgba(231, 76, 60, 0.15);
+  color: var(--danger-color);
+  border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+/* Etiquetas de Estado */
+.badge-status {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85em;
+    display: inline-block;
+    text-align: center;
+}
+
+.badge-solvente {
+    background-color: rgba(39, 174, 96, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(39, 174, 96, 0.2);
+}
+
+.badge-deuda {
+    background-color: rgba(231, 76, 60, 0.1);
+    color: var(--danger-color);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+/* --- NUEVOS ESTILOS MODAL DETALLES --- */
+
+/* Cabecera del Modal */
+.modal-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+}
+
+.modal-header-modern h2 {
+    margin: 0;
+    color: var(--secondary-color);
+    font-size: 2rem;
+}
+
+/* Secciones */
+.detail-section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+}
+
+.section-title {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(41, 128, 185, 0.1);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Grid de Datos */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px 30px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.info-value {
+    font-size: 1.05rem;
+    color: var(--text-main);
+    font-weight: 500;
+}
+
+/* Estilo especial para Representante */
+.representante-card {
+    background-color: #fafafa;
+    border-left: 4px solid var(--accent-color);
+}
+
+/* Tablas dentro del modal */
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    font-size: 0.95rem;
+}
+
+.details-table th {
+    background-color: #f8f9fa;
+    color: var(--secondary-color);
+    font-weight: 600;
+    text-align: left;
+    padding: 12px;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.details-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+}
+
+.details-table tr:last-child td {
+    border-bottom: none;
+}
+
+/* Badges para tablas */
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+.status-green { background: rgba(39, 174, 96, 0.1); color: var(--success-color); }
+.status-red { background: rgba(231, 76, 60, 0.1); color: var(--danger-color); }
+
+/* --- DOLLAR RATE SECTION --- */
+#tasa-input {
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s;
+    background-color: #fff;
+}
+#tasa-input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.1);
+}
+
+#tasa-save-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+#tasa-save-btn:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+#tasa-hist-btn {
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+#tasa-hist-btn:hover {
+    background-color: #7f8c8d;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Back to Groups Button */
+#back-to-groups {
+    background-color: #95a5a6;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 20px;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+#back-to-groups:hover {
+    background-color: #7f8c8d;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Action Buttons in Table */
+.edit-student, .register-payment {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-sm);
+}
+
+.edit-student:hover, .register-payment:hover {
+    background-color: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
