@@ -505,22 +505,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (err) { console.error(err); }
     }
 
-    async function openEditStudentModal(id) {
-        const studRes = await fetch(`http://localhost:3000/api/estudiantes`);
-        const allStudents = await studRes.json();
-        const student = allStudents.find(sg => String(sg.idEstudiante) === String(id));
-        if (!student) return;
-        
-        document.getElementById('student-modal-title').textContent = 'Editar Estudiante';
-        addStudentModal.style.display = 'flex';
-        addStudentForm.setAttribute('data-edit-id', id);
-        document.getElementById('est-Nombres').value = student.Nombres || '';
-        document.getElementById('est-Apellidos').value = student.Apellidos || '';
-        document.getElementById('est-Cedula').value = student.Cedula || '';
-        document.getElementById('est-Fecha_Nacimiento').value = student.Fecha_Nacimiento ? new Date(student.Fecha_Nacimiento).toISOString().slice(0, 10) : '';
-        document.getElementById('est-Telefono').value = student.Telefono || '';
-        document.getElementById('est-Correo').value = student.Correo || '';
-        document.getElementById('est-Direccion').value = student.Direccion || '';
+async function openEditStudentModal(id) {
+        try {
+            // 1. Obtener datos completos del estudiante (incluyendo grupos)
+            const res = await fetch(`http://localhost:3000/api/estudiantes/${id}`);
+            const data = await res.json();
+            
+            if (!data.success) {
+                alert("Error al cargar los datos del estudiante.");
+                return;
+            }
+
+            const student = data.estudiante;
+            const currentGroups = data.grupos || [];
+
+            document.getElementById('student-modal-title').textContent = 'Editar Estudiante';
+            addStudentModal.style.display = 'flex';
+            
+            // 2. Llenar campos de texto
+            addStudentForm.setAttribute('data-edit-id', id);
+            document.getElementById('est-Nombres').value = student.Nombres || '';
+            document.getElementById('est-Apellidos').value = student.Apellidos || '';
+            document.getElementById('est-Cedula').value = student.Cedula || '';
+            document.getElementById('est-Fecha_Nacimiento').value = student.Fecha_Nacimiento ? new Date(student.Fecha_Nacimiento).toISOString().slice(0, 10) : '';
+            document.getElementById('est-Telefono').value = student.Telefono || '';
+            document.getElementById('est-Correo').value = student.Correo || '';
+            document.getElementById('est-Direccion').value = student.Direccion || '';
+
+            // 3. Llenar la fecha de inscripción (usamos la fecha actual si agregamos nuevos grupos, o la original)
+            // Para edición, visualmente podemos dejar la de hoy para nuevos grupos
+            document.getElementById('ins-Fecha_inscripcion').value = new Date().toISOString().slice(0, 10);
+
+            // 4. PRECARGAR GRUPOS EN LA VARIABLE GLOBAL Y VISUALMENTE
+            selectedGrupos = []; // Limpiamos primero
+            
+            // Si el estudiante ya tiene grupos, los añadimos a la selección
+            if (currentGroups.length > 0) {
+                currentGroups.forEach(g => {
+                    // Solo añadimos el ID a la lista de seleccionados
+                    if (!selectedGrupos.includes(g.idGrupo)) {
+                        selectedGrupos.push(g.idGrupo);
+                    }
+                });
+            }
+            
+            // Renderizamos los "chips" de los grupos
+            renderSelectedGrupos();
+
+        } catch (err) {
+            console.error(err);
+            alert("Error de conexión al cargar estudiante.");
+        }
     }
 
     // --- RENDER GRUPOS (CARDS) ---

@@ -17,13 +17,58 @@ function calcularEdad(fechaStr) {
 
 exports.updateEstudiante = async (req, res) => {
     try {
-        const id = req.params.id;
-        const success = await Estudiante.updateEstudiante(id, req.body);
-        if (success) {
-            return res.json({ success: true });
+        const idEstudiante = req.params.id;
+        const data = req.body;
+
+        // 1. Actualizar datos personales
+        const success = await Estudiante.updateEstudiante(idEstudiante, data);
+        
+        // 2. Procesar GRUPOS de forma inteligente
+        if (data.grupos && Array.isArray(data.grupos) && data.grupos.length > 0) {
+            const fechaIns = data.Fecha_inscripcion || new Date().toISOString().slice(0,10);
+            
+            // Obtenemos las inscripciones actuales para comparar
+            const inscripcionesActuales = await Estudiante.getGroupsByStudent(idEstudiante);
+
+            for (const gid of data.grupos) {
+                // Buscamos información del grupo que queremos agregar
+                const gInfo = await Grupo.findById(gid);
+                
+                if (gInfo) {
+                    // Verificamos si ya existe una inscripción para este CURSO (no solo grupo)
+                    const inscripcionExistente = inscripcionesActuales.find(
+                        i => String(i.idCurso) === String(gInfo.idCurso)
+                    );
+
+                    if (inscripcionExistente) {
+                        // CASO A: Ya está inscrito en este curso.
+                        // Verificamos si es el mismo grupo o uno diferente.
+                        if (String(inscripcionExistente.idGrupo) !== String(gid)) {
+                            // Es un CAMBIO de grupo (ej: Inglés 1 -> Inglés 2). Actualizamos.
+                            console.log(`Actualizando inscripción: Curso ${gInfo.idCurso} pasa a Grupo ${gid}`);
+                            await Estudiante.updateInscripcionGrupo(idEstudiante, gInfo.idCurso, gid, fechaIns);
+                        } else {
+                            // Es el MISMO grupo. No hacemos nada para preservar la fecha original de inscripción.
+                            console.log(`Estudiante ya pertenece al grupo ${gid}, se conserva original.`);
+                        }
+                    } else {
+                        // CASO B: Es un curso totalmente nuevo. Inscribimos.
+                        console.log(`Creando nueva inscripción para Grupo ${gid}`);
+                        await Estudiante.createInscripcion(idEstudiante, gInfo.idCurso, fechaIns, gid);
+                    }
+                }
+            }
+        }
+
+        if (success || (data.grupos && data.grupos.length > 0)) {
+            return res.json({ success: true, message: 'Estudiante actualizado correctamente' });
         } else {
+            // Si no se actualizó nada y no hubo grupos nuevos, verificamos si el estudiante existe
+            const exists = await Estudiante.getEstudianteById(idEstudiante);
+            if(exists) return res.json({ success: true, message: 'Datos sin cambios' });
             return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
         }
+
     } catch (error) {
         console.error('Error actualizando estudiante:', error);
         return res.status(500).json({ success: false, message: 'Error al actualizar estudiante' });
@@ -63,7 +108,7 @@ exports.getEstudianteDetails = async (req, res) => {
         console.error('Error obteniendo detalles del estudiante:', err);
         return res.status(500).json({ success: false, message: 'Error al obtener detalles del estudiante' });
     }
-};;
+};
 
 exports.createEstudiante = async (req, res) => {
     try {

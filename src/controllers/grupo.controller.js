@@ -63,8 +63,6 @@ const summaryGrupos = async (req, res) => {
     }
 };
 
-// ... imports al inicio del archivo ...
-
 const estudiantesPorGrupo = async (req, res) => {
     try {
         const idGrupo = req.params.id; // El ID del grupo que estamos viendo (ej: Oratoria)
@@ -107,7 +105,7 @@ const estudiantesPorGrupo = async (req, res) => {
                 }
             });
 
-            // 2. Deudas Virtuales (Automáticas) - AQUÍ ESTÁ LA CORRECCIÓN
+            // 2. Deudas Virtuales (Automáticas) - CORREGIDO: SIN PERIODO DE GRACIA
             // Buscamos la inscripción SOLO de este grupo
             const [insc] = await conn.promise().query(
                 'SELECT Fecha_inscripcion FROM inscripciones WHERE idEstudiante = ? AND idGrupo = ? LIMIT 1', 
@@ -145,15 +143,11 @@ const estudiantesPorGrupo = async (req, res) => {
                         return f.getFullYear() === yearCheck && (f.getMonth() + 1) === mesCheck;
                     });
 
-                    // Si no hay pago REGISTRADO PARA ESTE GRUPO, sumamos la deuda
+                    // Si no hay pago REGISTRADO PARA ESTE GRUPO, sumamos la deuda INMEDIATAMENTE
                     if ((!pagado || pagado.length === 0) && !existeDeudaFisica) {
-                        // Verificación de días de gracia (opcional)
-                        const currentDay = fechaActual.getDate();
-                        const esMesActual = mesClave === `${fechaActual.getFullYear()}-${String(fechaActual.getMonth() + 1).padStart(2, '0')}`;
-                        
-                        if (!esMesActual || currentDay > 5) {
-                             deudaTotal += costoMensualidad;
-                        }
+                        // Modificación: Se eliminó la validación de días de gracia (currentDay > 5).
+                        // Ahora la deuda se suma siempre que no haya pago.
+                        deudaTotal += costoMensualidad;
                     }
                     iterador.setMonth(iterador.getMonth() + 1);
                 }
@@ -168,8 +162,6 @@ const estudiantesPorGrupo = async (req, res) => {
         return res.status(500).json({ success: false, message: 'Error al obtener estudiantes' });
     }
 };
-
-// ... resto del archivo ...
 
 const updateGrupo = async (req, res) => {
     try {
