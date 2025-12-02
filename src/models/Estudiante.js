@@ -67,6 +67,49 @@ class Estudiante {
     }
     // -----------------------------
 
+    static async deleteInscripcion(idEstudiante, idGrupo) {
+        // 1. Obtener deudas virtuales pendientes para este grupo antes de eliminar
+        try {
+            const deudas = await Estudiante.getDebtsForStudent(idEstudiante, idGrupo);
+            const deudasVirtuales = deudas.filter(d => d.esVirtual === true && d.idGrupo === idGrupo);
+
+            if (deudasVirtuales.length > 0) {
+                const tasaActual = await Estudiante.getLatestTasa() || 1;
+                
+                for (const d of deudasVirtuales) {
+                    const montoBs = Number((d.Monto_usd * tasaActual).toFixed(4));
+                    const fechaVencimiento = new Date(d.Fecha_emision);
+                    fechaVencimiento.setDate(fechaVencimiento.getDate() + 5); // 5 días para pagar
+
+                    await conn.promise().query(
+                        `INSERT INTO deudas (idEstudiante, Monto_usd, Tasa_Emision, Monto_bs_emision, Fecha_emision, Fecha_vencimiento, Concepto, Estado)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                        [
+                            idEstudiante,
+                            d.Monto_usd,
+                            tasaActual,
+                            montoBs,
+                            d.Fecha_emision,
+                            fechaVencimiento,
+                            d.Concepto,
+                            'Pendiente'
+                        ]
+                    );
+                }
+            }
+        } catch (err) {
+            console.error('Error materializando deudas virtuales:', err);
+            // No detenemos la eliminación si falla esto, pero logueamos el error
+        }
+
+        // 2. Eliminar la inscripción
+        const [result] = await conn.promise().query(
+            'DELETE FROM inscripciones WHERE idEstudiante = ? AND idGrupo = ?',
+            [idEstudiante, idGrupo]
+        );
+        return result.affectedRows > 0;
+    }
+
     static async findEstudiantesByGrupo(idGrupo) {
         const [rows] = await conn.promise().query(
             `SELECT e.idEstudiante, e.Nombres, e.Apellidos, e.Cedula, e.Fecha_Nacimiento, e.Telefono, e.Correo, e.Direccion
@@ -99,11 +142,12 @@ class Estudiante {
         return rows && rows.length ? rows[0].Tasa_usd_a_bs : null;
     }
 
-    static async createPago({ idDeuda = null, idMetodos_pago = null, idCuenta_Destino = null, idEstudiante = null, Referencia = null, observacion = null, Monto_bs = null, Tasa_Pago = null, Monto_usd = null, Fecha_pago = null }, dbConn = null) {
+    static async createPago({ idDeuda = null, idMetodos_pago = null, idCuenta_Destino = null, idEstudiante = null, Referencia = null, observacion = null, Monto_bs = null, Tasa_Pago = null, Monto_usd = null, Fecha_pago = null, idGrupo = null }, dbConn = null) {
         const executor = dbConn ? dbConn.promise() : conn.promise();
         const [result] = await executor.query(
-            'INSERT INTO pagos (idDeuda, idMetodos_pago, idCuenta_Destino, idEstudiante, Referencia, observacion, Monto_bs, Tasa_Pago, Monto_usd, Fecha_pago) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [idDeuda, idMetodos_pago, idCuenta_Destino, idEstudiante, Referencia, observacion, Monto_bs, Tasa_Pago, Monto_usd, Fecha_pago]
+            `INSERT INTO pagos (idDeuda, idMetodos_pago, idCuenta_Destino, idEstudiante, Referencia, observacion, Monto_bs, Tasa_Pago, Monto_usd, Fecha_pago, idGrupo)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            [idDeuda, idMetodos_pago, idCuenta_Destino, idEstudiante, Referencia, observacion, Monto_bs, Tasa_Pago, Monto_usd, Fecha_pago, idGrupo]
         );
         return result.insertId;
     }
@@ -176,8 +220,8 @@ class Estudiante {
             `SELECT p.idPago, p.idDeuda, p.idMetodos_pago, p.Referencia, p.observacion AS Observacion, p.Monto_bs, p.Monto_usd, p.Fecha_pago,
                     cm.Mes_date AS Mes_control, cm.idGrupo AS idGrupo_control, g.Nombre_Grupo AS Grupo_nombre
              FROM pagos p
-             LEFT JOIN control_mensualidades cm ON cm.idPago = p.idPago AND cm.idEstudiante = p.idEstudiante
-             LEFT JOIN grupos g ON g.idGrupo = cm.idGrupo
+             LEFT JOIN control_mensualidades cm ON cm.idPago = p.idPago
+             LEFT JOIN grupos g ON g.idGrupo = p.idGrupo
              WHERE p.idEstudiante = ?
              ORDER BY p.Fecha_pago DESC`, [idEstudiante]
         );

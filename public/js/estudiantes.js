@@ -194,7 +194,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- RENDERIZADO DE ESTUDIANTES ---
 
-    function createStudentRow(s) {
+    function createStudentRow(s, idGrupo = null) {
         try {
             const tr = document.createElement('tr');
             let edadDisplay = (s.edad !== null && s.edad !== undefined) ? s.edad : '—';
@@ -237,7 +237,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             tr.querySelector('.register-payment').addEventListener('click', (ev) => {
                 ev.preventDefault();
-                window.location.href = `registrar_pago.html?studentId=${s.idEstudiante}`;
+                // Include idGrupo in URL if available
+                const url = idGrupo 
+                    ? `registrar_pago.html?studentId=${s.idEstudiante}&groupId=${idGrupo}`
+                    : `registrar_pago.html?studentId=${s.idEstudiante}`;
+                window.location.href = url;
             });
 
             tr.querySelector('.edit-student').addEventListener('click', () => openEditStudentModal(s.idEstudiante));
@@ -265,7 +269,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             } else {
                 noMsg.style.display = 'none';
                 students.forEach(s => {
-                    const tr = createStudentRow(s);
+                    const tr = createStudentRow(s, idGrupo);
                     if (tr) studentsTbody.appendChild(tr);
                 });
             }
@@ -341,7 +345,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     
                     const tbody = table.querySelector('tbody');
                     students.forEach(s => {
-                        const tr = createStudentRow(s);
+                        const tr = createStudentRow(s, group.idGrupo);
                         if (tr) tbody.appendChild(tr);
                     });
 
@@ -414,6 +418,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         <tr>
                             <td>${fecha}</td>
                             <td>${mes}</td>
+                            <td>${p.Grupo_nombre || 'N/A'}</td>
                             <td>${p.Referencia || 'N/A'}</td>
                             <td>${p.Observacion || ''}</td>
                             <td>Bs. ${mBs}</td>
@@ -475,6 +480,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 <tr>
                                     <th>Fecha</th>
                                     <th>Mes</th>
+                                    <th>Grupo</th>
                                     <th>Referencia</th>
                                     <th>Observación</th>
                                     <th>Monto Bs</th>

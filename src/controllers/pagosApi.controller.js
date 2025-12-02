@@ -102,7 +102,8 @@ exports.createPayment = async (req, res) => {
             Monto_bs,
             Tasa_Pago: tasaActual,
             Monto_usd,
-            Fecha_pago
+            Fecha_pago,
+            idGrupo: payload.idGrupo || null // Pass idGrupo to createPago
         });
 
         // 7. Control de Mensualidades
@@ -111,7 +112,7 @@ exports.createPayment = async (req, res) => {
         if (mesRef) {
             try {
                 // Asegurarse de que idGrupo venga del payload (lo enviamos desde el JS en el paso anterior)
-                const idGrupoControl = payload.idGrupo || null; 
+                const idGrupoControl = payload.idGrupo || null;
                 const [yearStr, monthStr] = mesRef.split('-');
                 const mesDateStr = `${mesRef}-01`;
 

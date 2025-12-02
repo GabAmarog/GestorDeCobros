@@ -24,39 +24,46 @@ exports.updateEstudiante = async (req, res) => {
         const success = await Estudiante.updateEstudiante(idEstudiante, data);
         
         // 2. Procesar GRUPOS de forma inteligente
-        if (data.grupos && Array.isArray(data.grupos) && data.grupos.length > 0) {
+        // Obtenemos las inscripciones actuales UNA SOLA VEZ
+        const inscripcionesActuales = await Estudiante.getGroupsByStudent(idEstudiante);
+        
+        if (data.grupos && Array.isArray(data.grupos)) {
             const fechaIns = data.Fecha_inscripcion || new Date().toISOString().slice(0,10);
             
-            // Obtenemos las inscripciones actuales para comparar
-            const inscripcionesActuales = await Estudiante.getGroupsByStudent(idEstudiante);
+            // A. AGREGAR nuevos grupos
+            if (data.grupos.length > 0) {
+                for (const gid of data.grupos) {
+                    // Buscamos información del grupo que queremos agregar
+                    const gInfo = await Grupo.findById(gid);
+                    
+                    if (gInfo) {
+                        // Verificamos si ya está inscrito en ESTE grupo específico
+                        const yaInscritoEnGrupo = inscripcionesActuales.find(
+                            i => String(i.idGrupo) === String(gid)
+                        );
 
-            for (const gid of data.grupos) {
-                // Buscamos información del grupo que queremos agregar
-                const gInfo = await Grupo.findById(gid);
-                
-                if (gInfo) {
-                    // Verificamos si ya existe una inscripción para este CURSO (no solo grupo)
-                    const inscripcionExistente = inscripcionesActuales.find(
-                        i => String(i.idCurso) === String(gInfo.idCurso)
-                    );
-
-                    if (inscripcionExistente) {
-                        // CASO A: Ya está inscrito en este curso.
-                        // Verificamos si es el mismo grupo o uno diferente.
-                        if (String(inscripcionExistente.idGrupo) !== String(gid)) {
-                            // Es un CAMBIO de grupo (ej: Inglés 1 -> Inglés 2). Actualizamos.
-                            console.log(`Actualizando inscripción: Curso ${gInfo.idCurso} pasa a Grupo ${gid}`);
-                            await Estudiante.updateInscripcionGrupo(idEstudiante, gInfo.idCurso, gid, fechaIns);
-                        } else {
-                            // Es el MISMO grupo. No hacemos nada para preservar la fecha original de inscripción.
+                        if (yaInscritoEnGrupo) {
+                            // Ya está en este grupo. No hacemos nada para preservar la fecha original.
                             console.log(`Estudiante ya pertenece al grupo ${gid}, se conserva original.`);
+                        } else {
+                            // No está en este grupo. Creamos una NUEVA inscripción.
+                            console.log(`Creando nueva inscripción para Grupo ${gid}`);
+                            await Estudiante.createInscripcion(idEstudiante, gInfo.idCurso, fechaIns, gid);
                         }
-                    } else {
-                        // CASO B: Es un curso totalmente nuevo. Inscribimos.
-                        console.log(`Creando nueva inscripción para Grupo ${gid}`);
-                        await Estudiante.createInscripcion(idEstudiante, gInfo.idCurso, fechaIns, gid);
                     }
                 }
+            }
+            
+            // B. ELIMINAR grupos que ya no están en la lista
+            // Convertir data.grupos a strings para comparación consistente
+            const gruposNuevos = data.grupos.map(g => String(g));
+            const gruposA_Eliminar = inscripcionesActuales.filter(insc => 
+                !gruposNuevos.includes(String(insc.idGrupo))
+            );
+
+            for (const insc of gruposA_Eliminar) {
+                console.log(`Eliminando inscripción del grupo ${insc.idGrupo} para estudiante ${idEstudiante}`);
+                await Estudiante.deleteInscripcion(idEstudiante, insc.idGrupo);
             }
         }
 

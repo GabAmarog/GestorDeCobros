@@ -115,14 +115,35 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const s = data.estudiante;
                 studentNameEl.textContent = `${s.Nombres} ${s.Apellidos}`;
                 
+                // Read groupId from URL if provided
+                const urlParams = new URLSearchParams(window.location.search);
+                const groupIdFromUrl = urlParams.get('groupId');
+                
                 if (data.grupos && data.grupos.length > 0) {
                     studentGroupNames = data.grupos.map(g => g.Nombre_Grupo);
-                    if (data.grupos.length === 1) {
-                        studentGroupEl.textContent = `Grupo: ${data.grupos[0].Nombre_Grupo}`;
-                        currentGroupId = data.grupos[0].idGrupo;
+                    
+                    // If groupId was provided in URL, use it
+                    if (groupIdFromUrl) {
+                        const matchingGroup = data.grupos.find(g => String(g.idGrupo) === String(groupIdFromUrl));
+                        if (matchingGroup) {
+                            studentGroupEl.textContent = `Grupo: ${matchingGroup.Nombre_Grupo}`;
+                            currentGroupId = matchingGroup.idGrupo;
+                        } else {
+                            // Group not found, fallback to first group
+                            studentGroupEl.textContent = data.grupos.length === 1 
+                                ? `Grupo: ${data.grupos[0].Nombre_Grupo}`
+                                : `Grupos: ${studentGroupNames.join(', ')}`;
+                            currentGroupId = data.grupos[0].idGrupo;
+                        }
                     } else {
-                        studentGroupEl.textContent = `Grupos: ${studentGroupNames.join(', ')}`;
-                        currentGroupId = data.grupos[0].idGrupo;
+                        // No groupId in URL, use first group
+                        if (data.grupos.length === 1) {
+                            studentGroupEl.textContent = `Grupo: ${data.grupos[0].Nombre_Grupo}`;
+                            currentGroupId = data.grupos[0].idGrupo;
+                        } else {
+                            studentGroupEl.textContent = `Grupos: ${studentGroupNames.join(', ')}`;
+                            currentGroupId = data.grupos[0].idGrupo;
+                        }
                     }
                 } else {
                     studentGroupEl.textContent = 'Grupo: Sin asignar';
