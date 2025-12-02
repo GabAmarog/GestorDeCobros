@@ -150,42 +150,13 @@
             >
               <thead>
                 <tr style="background: #f9f9f9">
-                  <th
-                    style="
-                      padding: 8px;
-                      border-bottom: 1px solid #ddd;
-                      text-align: left;
-                    "
-                  >
-                    Fecha
-                  </th>
-                  <th
-                    style="
-                      padding: 8px;
-                      border-bottom: 1px solid #ddd;
-                      text-align: left;
-                    "
-                  >
-                    Concepto
-                  </th>
-                  <th
-                    style="
-                      padding: 8px;
-                      border-bottom: 1px solid #ddd;
-                      text-align: left;
-                    "
-                  >
-                    Referencia
-                  </th>
-                  <th
-                    style="
-                      padding: 8px;
-                      border-bottom: 1px solid #ddd;
-                      text-align: left;
-                    "
-                  >
-                    Monto ($)
-                  </th>
+                  <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: left;">Fecha</th>
+                  <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: left;">Mes</th>
+                  <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: left;">Grupo</th>
+                  <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: left;">Referencia</th>
+                  <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: left;">Observación</th>
+                  <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: left;">Monto Bs</th>
+                  <th style="padding: 8px; border-bottom: 1px solid #ddd; text-align: left;">Monto USD</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -298,6 +269,54 @@
 
     <script src="../../public/js/menu.js"></script>
     <script>
+      // --- FUNCIONES AUXILIARES (Copiadas de estudiantes.js) ---
+      function formatMes(mesVal, fechaPago) {
+        if (mesVal && typeof mesVal === 'string' && (mesVal.includes('T') || mesVal.length >= 10)) {
+            const d = new Date(mesVal);
+            if (!isNaN(d.getTime())) {
+                const nm = d.toLocaleString('es-ES', { month: 'long' });
+                const year = d.getFullYear();
+                return nm.charAt(0).toUpperCase() + nm.slice(1) + ' ' + year;
+            }
+        }
+        if (mesVal && /^\d{4}-\d{2}-\d{2}$/.test(mesVal)) {
+            const d = new Date(mesVal);
+            if (!isNaN(d.getTime())) {
+                const nm = d.toLocaleString('es-ES', { month: 'long' });
+                const year = d.getFullYear();
+                return nm.charAt(0).toUpperCase() + nm.slice(1) + ' ' + year;
+            }
+        }
+        if (mesVal && /^\d{4}-\d{2}$/.test(mesVal)) {
+            const [y, m] = mesVal.split('-');
+            const d = new Date(y, m - 1, 1);
+            if (!isNaN(d.getTime())) {
+                const nm = d.toLocaleString('es-ES', { month: 'long' });
+                return nm.charAt(0).toUpperCase() + nm.slice(1) + ' ' + y;
+            }
+        }
+        if (!mesVal && fechaPago) {
+            const d = new Date(fechaPago);
+            if (!isNaN(d.getTime())) {
+                const nm = d.toLocaleString('es-ES', { month: 'long' });
+                const year = d.getFullYear();
+                return nm.charAt(0).toUpperCase() + nm.slice(1) + ' ' + year;
+            }
+        }
+        return mesVal || '';
+      }
+
+      function formatMoney(amount, currency) {
+        const num = Number(amount);
+        if (isNaN(num)) return '0.00';
+
+        if (currency === 'USD') {
+            return num % 1 === 0 ? num.toString() : num.toFixed(2);
+        } else {
+            return num.toFixed(2);
+        }
+      }
+
       document.addEventListener("DOMContentLoaded", async () => {
         const tableBody = document.getElementById("deudores-table-body");
         const noDataMsg = document.getElementById("no-data-msg");
@@ -313,11 +332,23 @@
         }
 
         // Cerrar modal al hacer clic fuera
-        window.onclick = function (event) {
-          if (event.target == modal) {
-            modal.style.display = "none";
+        window.addEventListener('click', (event) => {
+          if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
           }
-        };
+        });
+
+        // Global ESC key listener for modals
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const modals = document.querySelectorAll('.modal');
+                modals.forEach(m => {
+                    if (m.style.display === 'flex' || m.style.display === 'block') {
+                        m.style.display = 'none';
+                    }
+                });
+            }
+        });
 
         // Cargar lista de deudores
         try {
@@ -449,36 +480,27 @@
           pagosTable.innerHTML = "";
 
           if (data.pagos && data.pagos.length > 0) {
-            // Mostramos los últimos 5 pagos
-            data.pagos.slice(0, 5).forEach((p) => {
-              const fechaPago = new Date(p.Fecha_pago).toLocaleDateString();
-
-              // Nombre del concepto base
-              let conceptoDisplay = p.Concepto_Pagado || "Abono / Otro";
-
-              // Si es un pago parcial, le agregamos la etiqueta con el monto
-              if (p.Es_Parcial > 0) {
-                conceptoDisplay += ` <span style="color:#d35400; font-weight:bold; font-size:0.9em;">(Parcial $${Number(
-                  p.Monto_usd
-                ).toFixed(2)})</span>`;
-              }
+            data.pagos.forEach((p) => {
+              const fecha = p.Fecha_pago ? new Date(p.Fecha_pago).toISOString().slice(0, 10) : '';
+              const mes = formatMes(p.Mes_control || p.Mes_referencia, p.Fecha_pago);
+              const mBs = formatMoney(p.Monto_bs, 'Bs');
+              const mUsd = formatMoney(p.Monto_usd, 'USD');
 
               const tr = document.createElement("tr");
               tr.innerHTML = `
-                            <td style="padding:8px; border-bottom:1px solid #eee;">${fechaPago}</td>
-                            <td style="padding:8px; border-bottom:1px solid #eee;">${conceptoDisplay}</td>
-                            <td style="padding:8px; border-bottom:1px solid #eee;">${
-                              p.Referencia || "N/A"
-                            }</td>
-                            <td style="padding:8px; border-bottom:1px solid #eee;">$${
-                              p.Monto_usd
-                            }</td>
+                            <td style="padding:8px; border-bottom:1px solid #eee;">${fecha}</td>
+                            <td style="padding:8px; border-bottom:1px solid #eee;">${mes}</td>
+                            <td style="padding:8px; border-bottom:1px solid #eee;">${p.Grupo_nombre || 'N/A'}</td>
+                            <td style="padding:8px; border-bottom:1px solid #eee;">${p.Referencia || 'N/A'}</td>
+                            <td style="padding:8px; border-bottom:1px solid #eee;">${p.Observacion || ''}</td>
+                            <td style="padding:8px; border-bottom:1px solid #eee;">Bs. ${mBs}</td>
+                            <td style="padding:8px; border-bottom:1px solid #eee;">$${mUsd}</td>
                         `;
               pagosTable.appendChild(tr);
             });
           } else {
             pagosTable.innerHTML =
-              '<tr><td colspan="4" style="padding:10px; text-align:center; color:#777;">No hay pagos registrados</td></tr>';
+              '<tr><td colspan="7" style="padding:10px; text-align:center; color:#777;">No hay pagos registrados</td></tr>';
           }
 
           // Llenar Historial de Cobranza

@@ -3,6 +3,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const searchInput = document.getElementById('search-grupos');
 
     if (searchInput) {
+        // Wrap input in a container for positioning the clear button
+        const wrapper = document.createElement('div');
+        wrapper.style.position = 'relative';
+        wrapper.style.display = 'flex';
+        wrapper.style.alignItems = 'center';
+        wrapper.style.flex = '1';
+        wrapper.style.maxWidth = '300px'; // Match original max-width
+        
+        searchInput.parentNode.insertBefore(wrapper, searchInput);
+        wrapper.appendChild(searchInput);
+        
+        // Adjust input styles to fit wrapper
+        searchInput.style.maxWidth = '100%';
+        searchInput.style.marginBottom = '0';
+
+        // Create Clear Button
+        const clearBtn = document.createElement('span');
+        clearBtn.innerHTML = '&times;';
+        clearBtn.style.position = 'absolute';
+        clearBtn.style.right = '10px';
+        clearBtn.style.cursor = 'pointer';
+        clearBtn.style.fontSize = '18px';
+        clearBtn.style.color = '#999';
+        clearBtn.style.display = 'none'; // Initially hidden
+        clearBtn.style.userSelect = 'none';
+        
+        wrapper.appendChild(clearBtn);
+
+        // Toggle clear button visibility
+        function toggleClearBtn() {
+            clearBtn.style.display = searchInput.value.trim() !== '' ? 'block' : 'none';
+        }
+
+        // Clear action
+        clearBtn.addEventListener('click', () => {
+            searchInput.value = '';
+            toggleClearBtn();
+            searchInput.focus();
+            // Trigger input event to refresh list
+            searchInput.dispatchEvent(new Event('input'));
+        });
+
         // Estilos de foco
         searchInput.addEventListener('focus', function() {
             this.style.borderColor = '#2196f3';
@@ -16,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Funcionalidad de filtrado mejorada
         searchInput.addEventListener('input', (e) => {
+            toggleClearBtn();
             const query = e.target.value.toLowerCase().trim();
             
             // Filtrar en Vista de Tarjetas (grupos)

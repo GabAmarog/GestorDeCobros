@@ -793,6 +793,10 @@ async function openEditStudentModal(id) {
             singleGroupContainer.style.display = 'none';
             cardsContainer.style.display = 'grid';
             
+            // Update placeholder
+            const searchInput = document.getElementById('search-grupos');
+            if (searchInput) searchInput.placeholder = "Buscar grupo...";
+
             renderGroupCards();
         });
 
@@ -814,6 +818,10 @@ async function openEditStudentModal(id) {
             singleGroupContainer.style.display = 'none';
             listContainer.style.display = 'block';
 
+            // Update placeholder
+            const searchInput = document.getElementById('search-grupos');
+            if (searchInput) searchInput.placeholder = "Buscar estudiante...";
+
             renderAllStudentsList();
         });
     }
@@ -821,5 +829,29 @@ async function openEditStudentModal(id) {
     // Cargas iniciales
     await loadGrupos();
     await loadTasa();
+    
+    // Set initial placeholder
+    const searchInput = document.getElementById('search-grupos');
+    if (searchInput) searchInput.placeholder = "Buscar grupo...";
+
     await renderGroupCards();
+
+    // Global ESC key listener for modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(m => {
+                if (m.style.display === 'flex' || m.style.display === 'block') {
+                    m.style.display = 'none';
+                }
+            });
+        }
+    });
+
+    // Global click outside listener for modals
+    window.addEventListener('click', (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    });
 });

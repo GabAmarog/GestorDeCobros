@@ -253,9 +253,6 @@ const tabs = document.querySelectorAll('.tab');
                     if (!curso) return;
                     document.getElementById('curso-Nombre_Curso').value = curso.Nombre_Curso;
                     document.getElementById('curso-Descripcion_Curso').value = curso.Descripcion_Curso || '';
-                    formCurso.setAttribute('data-edit-id', id);
-                    // open modal and switch to curso tab
-                    modal.style.display = 'flex';
                     tabButtons.forEach(b => b.classList.remove('active'));
                     tabs.forEach(t => { t.classList.remove('active'); t.style.display = 'none'; });
                     const cursoTabBtn = Array.from(tabButtons).find(b => b.getAttribute('data-tab') === 'tab-curso');
@@ -438,4 +435,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // If modal close was used on grouped page, refresh grouped view shortly after
     if (closeBtn) closeBtn.addEventListener('click', () => { setTimeout(() => { if (document.getElementById('cursos-grouped')) renderGroupedCursos(); }, 300); });
+
+    // Global ESC key listener for modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(m => {
+                if (m.style.display === 'flex' || m.style.display === 'block') {
+                    m.style.display = 'none';
+                }
+            });
+        }
+    });
+
+    // Global click outside listener for modals
+    window.addEventListener('click', (event) => {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = "none";
+        }
+    });
 });

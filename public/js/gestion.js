@@ -251,42 +251,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Cerrar modal al hacer clic fuera
+    // Cerrar modal al hacer clic fuera (Global)
     window.addEventListener('click', (e) => {
-        if (e.target === addUserModal) {
-            addUserModal.style.display = 'none';
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
         }
     });
 
-    if (addUserForm) {
-        addUserForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            addUserError.textContent = 'Guardando...';
-            
-            const username = document.getElementById('new-username').value;
-            const password = document.getElementById('new-password').value;
-            const rol = document.getElementById('new-rol').value;
-
-            try {
-                const response = await fetch('http://localhost:3000/api/users', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password, rol })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    alert('Usuario creado exitosamente');
-                    addUserModal.style.display = 'none';
-                    loadUsers(); // Recargar tabla
-                } else {
-                    addUserError.textContent = data.message || 'Error al crear usuario';
+    // Global ESC key listener for modals
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(m => {
+                if (m.style.display === 'flex' || m.style.display === 'block') {
+                    m.style.display = 'none';
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                addUserError.textContent = 'Error de conexión';
-            }
-        });
-    }
+            });
+        }
+    });
 });

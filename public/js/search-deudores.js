@@ -23,8 +23,43 @@ document.addEventListener('DOMContentLoaded', () => {
                 this.style.boxShadow = 'none';
             });
             
-            // Funcionalidad de filtrado
+            // Wrap input in a container for positioning the clear button
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            wrapper.style.display = 'flex';
+            wrapper.style.alignItems = 'center';
+            wrapper.style.width = '100%';
+            wrapper.style.maxWidth = '50%';
+            
+            searchInput.style.maxWidth = '100%'; // Reset max-width as wrapper handles it
+            
+            // Create Clear Button
+            const clearBtn = document.createElement('span');
+            clearBtn.innerHTML = '&times;';
+            clearBtn.style.position = 'absolute';
+            clearBtn.style.right = '10px';
+            clearBtn.style.cursor = 'pointer';
+            clearBtn.style.fontSize = '18px';
+            clearBtn.style.color = '#999';
+            clearBtn.style.display = 'none'; // Initially hidden
+            clearBtn.style.userSelect = 'none';
+
+            // Toggle clear button visibility
+            function toggleClearBtn() {
+                clearBtn.style.display = searchInput.value.trim() !== '' ? 'block' : 'none';
+            }
+
+            // Clear action
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                toggleClearBtn();
+                searchInput.focus();
+                // Trigger input event to refresh list
+                searchInput.dispatchEvent(new Event('input'));
+            });
+
             searchInput.addEventListener('input', (e) => {
+                toggleClearBtn();
                 const query = e.target.value.toLowerCase().trim();
                 const rows = document.querySelectorAll('#deudores-table-body tr');
                 
@@ -34,7 +69,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
             
-            searchContainer.appendChild(searchInput);
+            wrapper.appendChild(searchInput);
+            wrapper.appendChild(clearBtn);
+            searchContainer.appendChild(wrapper);
             tableContainer.parentElement.insertBefore(searchContainer, tableContainer);
         }
     }, 500);
